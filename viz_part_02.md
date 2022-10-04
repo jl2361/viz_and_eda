@@ -17,6 +17,7 @@ library(tidyverse)
 
 ``` r
 library(ggridges)
+library(patchwork)
 ```
 
 This code from the course website gets the data.
@@ -60,3 +61,149 @@ weather_df =
     ## date created (size, mb): 2022-10-03 21:38:08 (0.951)
 
     ## file min/max dates: 1999-09-01 / 2022-10-31
+
+## Scatterplot
+
+But better this time
+
+``` r
+weather_df %>%
+  ggplot(aes(x = tmin, y = tmax, color = name)) +
+  geom_point(alpha = .5) +
+  labs(
+    x = "Minimum Daily Temp (C)",
+    y = "Maximum Daily Temp (C)",
+    title = "Scatterplot of daily temp extremes",
+    caption = "Data come from the rnoaa package"
+  ) + 
+  scale_x_continuous(
+    breaks = c(-10, 0, 15),
+    labels = c("-10C", "0", "15")
+  ) 
+```
+
+    ## Warning: Removed 15 rows containing missing values (geom_point).
+
+<img src="viz_part_02_files/figure-gfm/unnamed-chunk-3-1.png" width="50%" />
+
+``` r
+ggp_weather =
+weather_df %>%
+  ggplot(aes(x = tmin, y = tmax, color = name)) +
+  geom_point(alpha = .5) +
+  labs(
+    x = "Minimum Daily Temp (C)",
+    y = "Maximum Daily Temp (C)",
+    title = "Scatterplot of daily temp extremes",
+    caption = "Data come from the rnoaa package"
+  ) +
+  viridis::scale_color_viridis(
+    name = "Location", 
+    discrete = TRUE)
+```
+
+## Themes
+
+``` r
+ggp_weather + 
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+    ## Warning: Removed 15 rows containing missing values (geom_point).
+
+<img src="viz_part_02_files/figure-gfm/unnamed-chunk-5-1.png" width="50%" />
+
+## Data in geom()
+
+``` r
+central_park_df = 
+  weather_df %>%
+  filter(name == "CentralPark_NY")
+
+waikiki_df = 
+  weather_df %>%
+  filter(name == "Waikiki_HA")
+```
+
+``` r
+ggplot(waikiki_df, aes(x = date, y = tmax)) + 
+  geom_point() +
+  geom_line(data = central_park_df)
+```
+
+    ## Warning: Removed 3 rows containing missing values (geom_point).
+
+<img src="viz_part_02_files/figure-gfm/unnamed-chunk-7-1.png" width="50%" />
+\## Patchwork …
+
+``` r
+tmax_tmin_plot = 
+weather_df %>%
+ggplot(aes(x = tmin, y = tmax, color = name)) + 
+  geom_point() +
+  theme(legend.position = "none")
+
+prcp_density_plot = 
+  weather_df %>%
+  filter(prcp > 0) %>%
+  ggplot(aes(x = prcp, fill = name)) + 
+  geom_density(alpha = .5) +
+  theme(legend.position = "none")
+
+seasonality_plot = 
+  weather_df %>%
+  ggplot(aes(x = date, y = tmax, color = name)) +
+  geom_point() + 
+  geom_smooth(se = FALSE) + 
+  theme(legend.position = "none")
+ 
+(tmax_tmin_plot + prcp_density_plot) / seasonality_plot
+```
+
+    ## Warning: Removed 15 rows containing missing values (geom_point).
+
+    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
+
+    ## Warning: Removed 3 rows containing non-finite values (stat_smooth).
+
+    ## Warning: Removed 3 rows containing missing values (geom_point).
+
+<img src="viz_part_02_files/figure-gfm/unnamed-chunk-8-1.png" width="50%" />
+
+## Data manipulation
+
+``` r
+weather_df %>%
+  mutate(name = fct_reorder(name, tmax)) %>%
+  ggplot(aes(x = name, y = tmax)) +
+  geom_boxplot()
+```
+
+    ## Warning: Removed 3 rows containing non-finite values (stat_boxplot).
+
+<img src="viz_part_02_files/figure-gfm/unnamed-chunk-9-1.png" width="50%" />
+
+``` r
+pulse_df = 
+  haven::read_sas("data/public_pulse_data.sas7bdat") %>%
+  janitor::clean_names() %>%
+  pivot_longer(
+    bdi_score_bl:bdi_score_12m,
+    names_to = "visit",
+    values_to = "bdi",
+    names_prefix = "bdi_score_"
+  ) %>%
+  select(id, visit, everything()) %>%
+  mutate(
+    visit = fct_relevel(visit, "bl")
+  )
+
+pulse_df %>%
+  ggplot(aes(x = visit, y = bdi)) + 
+  geom_boxplot()
+```
+
+    ## Warning: Removed 879 rows containing non-finite values (stat_boxplot).
+
+<img src="viz_part_02_files/figure-gfm/unnamed-chunk-10-1.png" width="50%" />
