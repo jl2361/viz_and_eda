@@ -70,7 +70,7 @@ ggplot(weather_df, aes(x = tmin, y = tmax)) +
 
     ## Warning: Removed 15 rows containing missing values (geom_point).
 
-![](viz_part_01_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+<img src="viz_part_01_files/figure-gfm/unnamed-chunk-3-1.png" width="50%" />
 
 Let’s make the same scatterplot, but different
 
@@ -82,7 +82,7 @@ weather_df %>%
   geom_point()
 ```
 
-![](viz_part_01_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+<img src="viz_part_01_files/figure-gfm/unnamed-chunk-4-1.png" width="50%" />
 
 Let’s keep making the same plot but different.
 
@@ -96,7 +96,7 @@ weather_scatterplot +
   geom_point()
 ```
 
-![](viz_part_01_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+<img src="viz_part_01_files/figure-gfm/unnamed-chunk-5-1.png" width="50%" />
 
 ## Let’s fancy ths up a bit
 
@@ -113,7 +113,7 @@ weather_df %>%
 
     ## Warning: Removed 15 rows containing missing values (geom_point).
 
-![](viz_part_01_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+<img src="viz_part_01_files/figure-gfm/unnamed-chunk-6-1.png" width="50%" />
 
 Maybe make separate panels.
 
@@ -131,7 +131,7 @@ weather_df %>%
 
     ## Warning: Removed 15 rows containing missing values (geom_point).
 
-![](viz_part_01_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+<img src="viz_part_01_files/figure-gfm/unnamed-chunk-7-1.png" width="50%" />
 
 `tmax` vs `tmin` is boring, let’s spice it up some.
 
@@ -149,7 +149,7 @@ weather_df %>%
 
     ## Warning: Removed 3 rows containing missing values (geom_point).
 
-![](viz_part_01_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+<img src="viz_part_01_files/figure-gfm/unnamed-chunk-8-1.png" width="50%" />
 
 ## Some quick stuff
 
@@ -161,7 +161,7 @@ weather_df %>%
 
     ## Warning: Removed 15 rows containing non-finite values (stat_binhex).
 
-![](viz_part_01_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+<img src="viz_part_01_files/figure-gfm/unnamed-chunk-9-1.png" width="50%" />
 
 ## Univariate plots …
 
@@ -178,7 +178,7 @@ weather_df %>%
 
     ## Warning: Removed 3 rows containing non-finite values (stat_bin).
 
-![](viz_part_01_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+<img src="viz_part_01_files/figure-gfm/unnamed-chunk-10-1.png" width="50%" />
 
 Let’s see more options!
 
@@ -190,7 +190,7 @@ weather_df %>%
 
     ## Warning: Removed 3 rows containing non-finite values (stat_density).
 
-![](viz_part_01_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+<img src="viz_part_01_files/figure-gfm/unnamed-chunk-11-1.png" width="50%" />
 
 Boxplots??
 
@@ -202,7 +202,7 @@ weather_df %>%
 
     ## Warning: Removed 3 rows containing non-finite values (stat_boxplot).
 
-![](viz_part_01_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+<img src="viz_part_01_files/figure-gfm/unnamed-chunk-12-1.png" width="50%" />
 
 Violin plots??
 
@@ -214,7 +214,7 @@ weather_df %>%
 
     ## Warning: Removed 3 rows containing non-finite values (stat_ydensity).
 
-![](viz_part_01_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+<img src="viz_part_01_files/figure-gfm/unnamed-chunk-13-1.png" width="50%" />
 
 OR
 
@@ -228,4 +228,51 @@ weather_df %>%
 
     ## Warning: Removed 3 rows containing non-finite values (stat_density_ridges).
 
-![](viz_part_01_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+<img src="viz_part_01_files/figure-gfm/unnamed-chunk-14-1.png" width="50%" />
+
+## Saving and embedding plots
+
+First – let’s save a plot.
+
+``` r
+weather_scatterplot = 
+  weather_df %>%
+  ggplot(aes(x = date, y = tmax, color = name)) +
+  geom_point(aes(size = prcp), alpha = .3) + 
+  geom_smooth(se = FALSE) + 
+  facet_grid(. ~ name)
+
+weather_scatterplot
+```
+
+    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
+
+    ## Warning: Removed 3 rows containing non-finite values (stat_smooth).
+
+    ## Warning: Removed 3 rows containing missing values (geom_point).
+
+<img src="viz_part_01_files/figure-gfm/unnamed-chunk-15-1.png" width="50%" />
+
+``` r
+ggsave(
+  file = "results/weather_scatterplot.pdf",
+  plot = weather_scatterplot, 
+  width = 8, height = 5)
+```
+
+    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
+
+    ## Warning: Removed 3 rows containing non-finite values (stat_smooth).
+    ## Removed 3 rows containing missing values (geom_point).
+
+``` r
+weather_scatterplot
+```
+
+    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
+
+    ## Warning: Removed 3 rows containing non-finite values (stat_smooth).
+
+    ## Warning: Removed 3 rows containing missing values (geom_point).
+
+<img src="viz_part_01_files/figure-gfm/unnamed-chunk-16-1.png" width="50%" />
