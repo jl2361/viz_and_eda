@@ -103,7 +103,7 @@ weather_df %>%
     ## 11 2017-11-01    90
     ## 12 2017-12-01    93
 
-## ’summarize()\`
+## `summarize()`
 
 let’s group and then summarize!
 
@@ -278,7 +278,7 @@ weather_df %>%
     names_from = name,
     values_from = mean_tmax
   ) %>%
-  knitr::kable()
+  knitr::kable(digit = 2)
 ```
 
     ## `summarise()` has grouped output by 'name'. You can override using the
@@ -286,15 +286,164 @@ weather_df %>%
 
 | month      | CentralPark_NY | Waikiki_HA | Waterhole_WA |
 |:-----------|---------------:|-----------:|-------------:|
-| 2017-01-01 |       5.977419 |   27.75806 |   -1.4000000 |
-| 2017-02-01 |       9.282143 |   27.21786 |   -0.0178571 |
-| 2017-03-01 |       8.222581 |   29.07742 |    1.6741935 |
-| 2017-04-01 |      18.273333 |   29.71333 |    3.8733333 |
-| 2017-05-01 |      20.090323 |   30.10690 |   10.0967742 |
-| 2017-06-01 |      26.263333 |   31.31000 |   12.8733333 |
-| 2017-07-01 |      28.738710 |   31.76000 |   16.3258065 |
-| 2017-08-01 |      27.193548 |   32.01613 |   19.6451613 |
-| 2017-09-01 |      25.433333 |   31.74333 |   14.1600000 |
-| 2017-10-01 |      21.787097 |   30.28710 |    8.3129032 |
-| 2017-11-01 |      12.290000 |   28.38333 |    1.3800000 |
-| 2017-12-01 |       4.474194 |   26.46129 |    2.2129032 |
+| 2017-01-01 |           5.98 |      27.76 |        -1.40 |
+| 2017-02-01 |           9.28 |      27.22 |        -0.02 |
+| 2017-03-01 |           8.22 |      29.08 |         1.67 |
+| 2017-04-01 |          18.27 |      29.71 |         3.87 |
+| 2017-05-01 |          20.09 |      30.11 |        10.10 |
+| 2017-06-01 |          26.26 |      31.31 |        12.87 |
+| 2017-07-01 |          28.74 |      31.76 |        16.33 |
+| 2017-08-01 |          27.19 |      32.02 |        19.65 |
+| 2017-09-01 |          25.43 |      31.74 |        14.16 |
+| 2017-10-01 |          21.79 |      30.29 |         8.31 |
+| 2017-11-01 |          12.29 |      28.38 |         1.38 |
+| 2017-12-01 |           4.47 |      26.46 |         2.21 |
+
+## Grouped mutates
+
+``` r
+weather_df %>%
+  group_by(name) %>%
+  mutate(mean_tmax = mean(tmax, na.rm = TRUE),
+         centered_tmax = tmax - mean_tmax) %>%
+  ggplot(aes(x = date, y = centered_tmax, color = name)) + 
+  geom_point()
+```
+
+    ## Warning: Removed 3 rows containing missing values (geom_point).
+
+![](eda_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+
+## lagged observations
+
+``` r
+weather_df %>%
+  group_by(name) %>%
+  mutate(
+    yesterday_tmax = lag(tmax),
+    tmax_change = tmax - yesterday_tmax
+  ) %>%
+  summarize(
+    sd_tmax_change = sd(tmax_change, na.rm = TRUE)
+  )
+```
+
+    ## # A tibble: 3 × 2
+    ##   name           sd_tmax_change
+    ##   <chr>                   <dbl>
+    ## 1 CentralPark_NY           4.45
+    ## 2 Waikiki_HA               1.23
+    ## 3 Waterhole_WA             3.13
+
+# one other window function
+
+``` r
+weather_df %>%
+  group_by(name, month) %>%
+  mutate(
+    tmax_rank = min_rank(tmax)
+  ) %>%
+  filter(tmax_rank < 4) %>%
+  arrange(name, month, tmax_rank)
+```
+
+    ## # A tibble: 128 × 8
+    ## # Groups:   name, month [36]
+    ##    name           id          date        prcp  tmax  tmin month      tmax_rank
+    ##    <chr>          <chr>       <date>     <dbl> <dbl> <dbl> <date>         <int>
+    ##  1 CentralPark_NY USW00094728 2017-01-09     0  -4.9  -9.9 2017-01-01         1
+    ##  2 CentralPark_NY USW00094728 2017-01-08     0  -3.8  -8.8 2017-01-01         2
+    ##  3 CentralPark_NY USW00094728 2017-01-07    81  -3.2  -6.6 2017-01-01         3
+    ##  4 CentralPark_NY USW00094728 2017-02-10     0   0    -7.1 2017-02-01         1
+    ##  5 CentralPark_NY USW00094728 2017-02-03     0   0.6  -3.2 2017-02-01         2
+    ##  6 CentralPark_NY USW00094728 2017-02-04     0   1.1  -5.5 2017-02-01         3
+    ##  7 CentralPark_NY USW00094728 2017-03-15     0  -3.2  -6.6 2017-03-01         1
+    ##  8 CentralPark_NY USW00094728 2017-03-11     0  -1.6  -8.2 2017-03-01         2
+    ##  9 CentralPark_NY USW00094728 2017-03-12     0  -1.6  -7.1 2017-03-01         2
+    ## 10 CentralPark_NY USW00094728 2017-04-01     0   8.9   2.8 2017-04-01         1
+    ## # … with 118 more rows
+
+# learning assessments
+
+``` r
+pulse_data = 
+  haven::read_sas("./data/public_pulse_data.sas7bdat") %>%
+  janitor::clean_names() %>%
+  pivot_longer(
+    bdi_score_bl:bdi_score_12m,
+    names_to = "visit", 
+    names_prefix = "bdi_score_",
+    values_to = "bdi") %>%
+  select(id, visit, everything()) %>%
+  mutate(
+    visit = replace(visit, visit == "bl", "00m"),
+    visit = factor(visit, levels = str_c(c("00", "01", "06", "12"), "m"))) %>%
+  arrange(id, visit)
+
+pulse_data %>% 
+  group_by(visit) %>% 
+  summarize(
+    mean_bdi = mean(bdi, na.rm = TRUE),
+    median_bdi = median(bdi, na.rm = TRUE)) %>% 
+  knitr::kable(digits = 3)
+```
+
+| visit | mean_bdi | median_bdi |
+|:------|---------:|-----------:|
+| 00m   |    7.995 |          6 |
+| 01m   |    6.046 |          4 |
+| 06m   |    5.672 |          4 |
+| 12m   |    6.097 |          4 |
+
+``` r
+pup_data = 
+  read_csv("./data/FAS_pups.csv") %>%
+  janitor::clean_names() %>%
+  mutate(sex = recode(sex, `1` = "male", `2` = "female")) 
+```
+
+    ## Rows: 313 Columns: 6
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## Delimiter: ","
+    ## chr (1): Litter Number
+    ## dbl (5): Sex, PD ears, PD eyes, PD pivot, PD walk
+    ## 
+    ## ℹ Use `spec()` to retrieve the full column specification for this data.
+    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+
+``` r
+litter_data = 
+  read_csv("./data/FAS_litters.csv") %>%
+  janitor::clean_names() %>%
+  separate(group, into = c("dose", "day_of_tx"), sep = 3)
+```
+
+    ## Rows: 49 Columns: 8
+    ## ── Column specification ────────────────────────────────────────────────────────
+    ## Delimiter: ","
+    ## chr (2): Group, Litter Number
+    ## dbl (6): GD0 weight, GD18 weight, GD of Birth, Pups born alive, Pups dead @ ...
+    ## 
+    ## ℹ Use `spec()` to retrieve the full column specification for this data.
+    ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+
+``` r
+fas_data = left_join(pup_data, litter_data, by = "litter_number") 
+
+fas_data %>% 
+  group_by(dose, day_of_tx) %>% 
+  drop_na(dose) %>% 
+  summarize(mean_pivot = mean(pd_pivot, na.rm = TRUE)) %>%
+ pivot_wider(
+    names_from = dose, 
+    values_from = mean_pivot) %>% 
+  knitr::kable(digits = 3)
+```
+
+    ## `summarise()` has grouped output by 'dose'. You can override using the
+    ## `.groups` argument.
+
+| day_of_tx |   Con |   Low |   Mod |
+|:----------|------:|------:|------:|
+| 7         | 7.000 | 7.939 | 6.984 |
+| 8         | 6.236 | 7.721 | 7.042 |
